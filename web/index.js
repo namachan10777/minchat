@@ -9,7 +9,7 @@ let username = 'guest';
 
 socket.addEventListener('open', e => {
   socket.send(JSON.stringify({
-    type: 'request-history',
+    type: 'request-current',
     times: 10
   }));
 });

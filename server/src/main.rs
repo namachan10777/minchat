@@ -1,5 +1,5 @@
 extern crate ws;
-extern crate serde_json;
+#[macro_use] extern crate serde_json;
 #[macro_use] extern crate serde_derive;
 
 use std::rc::Rc;
@@ -22,7 +22,6 @@ struct Join {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Request {
-    name: String,
     req: String
 }
 
@@ -40,16 +39,34 @@ impl ws::Handler for ChatHandler {
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
         if let Ok(text_msg) = msg.clone().as_text() {
             if let Ok(msg) = serde_json::from_str::<Message>(text_msg) {
-                
+                ()
             }
 
             if let Ok(msg) = serde_json::from_str::<Join>(text_msg) {
+                ()
             }
 
             if let Ok(msg) = serde_json::from_str::<Request>(text_msg) {
+                match msg.req.as_ref() {
+                    "user-list" => {
+                        return self.out.send(json!({
+                            "path": "/userlist",
+                            "content": self.users.borrow().clone()
+                        }).to_string())
+                    },
+                    _ => {
+                        return self.out.send(json!({
+                            "path": "/error",
+                            "content": format!("Unavailable request {}", msg.req),
+                        }).to_string())
+                    },
+                }
             }
         }
-        Ok(())
+        self.out.send(json!({
+            "path": "/error",
+            "content": format!("Unable to parse messge {:?}", msg),
+        }).to_string())
     }
 
     fn on_close(&mut self, _: ws::CloseCode, _: &str) -> () {

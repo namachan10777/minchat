@@ -11,7 +11,6 @@ type Users = Rc<RefCell<Vec<String>>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Message {
-    name: String,
     msg: String
 }
 
@@ -39,11 +38,28 @@ impl ws::Handler for ChatHandler {
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
         if let Ok(text_msg) = msg.clone().as_text() {
             if let Ok(msg) = serde_json::from_str::<Message>(text_msg) {
-                ()
+                return self.out.broadcast(json!({
+                    "path": "/message",
+                    "content": msg.msg.clone()
+                }).to_string())
             }
 
             if let Ok(msg) = serde_json::from_str::<Join>(text_msg) {
-                ()
+                if self.users.borrow().contains(&msg.name) {
+                    return self.out.send(json!({
+                        "path": "/error",
+                        "content": "duplicated name"
+                    }).to_string())
+                }
+                else {
+                    let join_msg = json!({
+                        "path": "/message",
+                        "content": format!("{} has joined!", msg.name)
+                    }).to_string();
+                    self.users.borrow_mut().push(msg.name.clone());
+                    self.name = Some(msg.name);
+                    return self.out.broadcast(join_msg)
+                }
             }
 
             if let Ok(msg) = serde_json::from_str::<Request>(text_msg) {

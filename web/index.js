@@ -2,54 +2,38 @@
 let serverURL = 'ws://localhost:8080';
 let socket = new WebSocket(serverURL);
 
-let timelineNode = document.getElementById('timeline');
-let msgboxNode = document.getElementById('msgbox');
+let root = document.getElementById("root");
 
-let username = 'guest';
+function UsernameInput () {
+  let root = document.createElement("div");
+  
+  let usernameInput = document.createElement("input");
+  usernameInput.setAttribute("type", "text");
+  usernameInput.onChange = (e) => {
+  };
+  usernameInput.classList.add("username-input");
 
-socket.addEventListener('open', e => {
-  socket.send(JSON.stringify({
-    type: 'request-current',
-    times: 10
-  }));
-});
+  let usernameInputUnderline = document.createElement("div");
+  usernameInputUnderline.classList.add("username-input-underline");
 
-function appendTL(msg) {
-  let elm = document.createElement('div');
-  let username = document.createElement('div');
-  let maincontent = document.createElement('div');
+  root.appendChild(usernameInput);
+  root.appendChild(usernameInputUnderline);
 
-  username.textContent = msg.username;
-  maincontent.textContent = msg.text;
-
-  elm.appendChild(username);
-  elm.appendChild(maincontent);
-
-  timelineNode.appendChild(elm);
+  return root;
 }
 
-socket.addEventListener('message', e => {
-  if (e.target.value.type === 'msgs') {
-    for (let msg in e.target.value.msgs) {
-      appendTL(msg);
-    }
-  }
-});
+function JoinWindow () {
+  let screen = document.createElement("div");
+  screen.classList.add("join-screen");
 
-let postButton    = document.getElementById('post-button');
-let textArea      = document.getElementById('maintext');
-let usernameInput = document.getElementById('username');
+  let joinButton = document.createElement("button");
+  joinButton.textContent = "Join!";
+  joinButton.classList.add("join-button");
 
-function postMsg() {
-  socket.send({
-    type: 'post',
-    msg: {
-      username: usernameInput.text,
-      text: textArea.text
-    }
-  });
+  screen.appendChild(UsernameInput());
+  screen.appendChild(joinButton);
+  
+  return screen;
 }
 
-postButton.addEventListener('onclick', e => {
-  postMsg();
-});
+root.appendChild(JoinWindow());

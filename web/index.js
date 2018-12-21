@@ -12,7 +12,8 @@ socket.onopen = () => {
 let userList = undefined;
 function updateUserList(list) {
   userList = list;
-  document.querySelectorAll('.username-input').forEach(elm => elm.disabled = false);
+  let usernameInput = document.getElementById('username-input');
+  if (usernameInput) usernameInput.disabled = false;
 }
 
 socket.onmessage = (e) => {
@@ -51,9 +52,10 @@ function UsernameInput () {
   usernameInput.setAttribute('type', 'text');
   usernameInput.addEventListener('input', (e) => {
     let msg = verifyUsername(e.target.value);
-    if (msg === "good!") document.querySelector('.join-button').disabled = false;
-    document.querySelector('.username-status').textContent = msg;
+    if (msg === "good!") document.getElementById('join-button').disabled = false;
+    document.getElementById('username-status').textContent = msg;
   });
+  usernameInput.setAttribute('id', 'username-input');
   usernameInput.classList.add('username-input');
   usernameInput.classList.add('join-forms');
   usernameInput.disabled = userList === undefined;
@@ -62,6 +64,7 @@ function UsernameInput () {
   usernameInputUnderline.classList.add('username-input-underline');
 
   let usernameStatus = document.createElement('span');
+  usernameStatus.setAttribute('id', 'username-status');
   usernameStatus.classList.add('username-status');
   usernameStatus.textContent = "please input your name";
 
@@ -78,11 +81,12 @@ function JoinWindow () {
 
   let joinButton = document.createElement('button');
   joinButton.textContent = "Join!";
+  joinButton.setAttribute('id', 'join-button');
   joinButton.classList.add('join-button');
   joinButton.classList.add('join-forms');
   joinButton.disabled = true;
   joinButton.addEventListener('click', () => {
-    tryJoin(document.querySelector('.username-input').value);
+    tryJoin(document.getElementById('username-input').value);
   });
 
   let formContainer = document.createElement('div');

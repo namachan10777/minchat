@@ -12,7 +12,7 @@ socket.onopen = () => {
 let userList = undefined;
 function updateUserList(list) {
   userList = list;
-  document.querySelectorAll('.join-forms').forEach(elm => elm.disabled = false);
+  document.querySelector('.username-input').disabled = false;
 }
 
 socket.onmessage = (e) => {
@@ -21,13 +21,23 @@ socket.onmessage = (e) => {
     updateUserList(msg.content);
 }
 
+function verifyUsername(username) {
+  if (userList === undefined) return 'please wait for connecting server...';
+  else if (userList.includes(username)) return 'duplicated user name';
+  else if (username.length < 5) return 'username length must be longer than 4';
+  else return 'good!';
+}
+
 function UsernameInput () {
   let root = document.createElement("div");
   
   let usernameInput = document.createElement("input");
   usernameInput.setAttribute("type", "text");
-  usernameInput.onChange = (e) => {
-  };
+  usernameInput.addEventListener("input", (e) => {
+    let msg = verifyUsername(e.target.value);
+    if (msg === 'good!') document.querySelector('.join-button').disabled = false;
+    document.querySelector('.username-status').textContent = msg;
+  });
   usernameInput.classList.add("username-input");
   usernameInput.classList.add("join-forms");
   usernameInput.disabled = userList === undefined;
@@ -35,8 +45,13 @@ function UsernameInput () {
   let usernameInputUnderline = document.createElement("div");
   usernameInputUnderline.classList.add("username-input-underline");
 
+  let usernameStatus = document.createElement("span");
+  usernameStatus.classList.add("username-status");
+  usernameStatus.textContent = 'please input your name';
+
   root.appendChild(usernameInput);
   root.appendChild(usernameInputUnderline);
+  root.appendChild(usernameStatus);
 
   return root;
 }
@@ -49,10 +64,14 @@ function JoinWindow () {
   joinButton.textContent = "Join!";
   joinButton.classList.add("join-button");
   joinButton.classList.add("join-forms");
-  joinButton.disabled = userList === undefined;
+  joinButton.disabled = true;
 
-  screen.appendChild(UsernameInput());
-  screen.appendChild(joinButton);
+  let formContainer = document.createElement("div");
+  formContainer.classList.add("form-container");
+  formContainer.appendChild(UsernameInput());
+  formContainer.appendChild(joinButton);
+
+  screen.appendChild(formContainer);
   
   return screen;
 }

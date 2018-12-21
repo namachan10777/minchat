@@ -21,7 +21,7 @@ body {
 }
 
 .join-button {
-	margin: 2vw;
+	margin-left: 2vw;
 	width: 10vw;
 	height: 3vw;
 	border-radius: 0.2vw;
@@ -46,7 +46,7 @@ body {
 }
 
 .username-input {
-	height: 2vw;
+	height: 3vw;
 	width: 30vw;
 	background-color: #263238;
 
@@ -74,4 +74,13 @@ body {
 
 .username-input:hover + .username-input-underline {
 	transform: scaleX(1);
+}
+
+.username-status {
+	color: #7fcccc;
+}
+
+.form-container {
+	display: flex;
+	flex-direction: row;
 }

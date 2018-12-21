@@ -28,9 +28,21 @@ body {
 	border: 0;
 	background-color: #009999;
 
-	color: #FFFFFF;
+	color: #cceaea;
 	font-family: 'Roboto', 'sans-serif';
 	font-size: large;
+
+	outline: none;
+}
+
+.join-button:hover {
+	background-color: #32adad;
+	transition: all 300ms;
+	color: #ffffff;
+}
+
+.join-button:active {
+	background-color: #009999;
 }
 
 .username-input {

@@ -48,7 +48,7 @@ impl ws::Handler for ChatHandler {
                 if self.users.borrow().contains(&msg.name) {
                     return self.out.send(json!({
                         "path": "/error",
-                        "content": "duplicated name"
+                        "code": "duplicated-name",
                     }).to_string())
                 }
                 else {
@@ -79,7 +79,7 @@ impl ws::Handler for ChatHandler {
                     _ => {
                         return self.out.send(json!({
                             "path": "/error",
-                            "content": format!("Unavailable request {}", msg.req),
+                            "code": "unavailable-request"
                         }).to_string())
                     },
                 }
@@ -87,7 +87,7 @@ impl ws::Handler for ChatHandler {
         }
         self.out.send(json!({
             "path": "/error",
-            "content": format!("Unable to parse messge {:?}", msg),
+            "code": "parse-failed"
         }).to_string())
     }
 

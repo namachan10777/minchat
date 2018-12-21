@@ -24,7 +24,7 @@ socket.onmessage = (e) => {
     // 遷移処理
   }
   else if (msg.path === '/error') {
-    if (msg.errorCode === 'duplicated name')
+    if (msg.code === 'duplicated-name')
       userList.push(msg.content);
   }
 }

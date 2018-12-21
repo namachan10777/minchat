@@ -12,7 +12,7 @@ socket.onopen = () => {
 let userList = undefined;
 function updateUserList(list) {
   userList = list;
-  document.querySelector('.username-input').disabled = false;
+  document.querySelectorAll('.username-input').forEach(elm => elm.disabled = false);
 }
 
 socket.onmessage = (e) => {

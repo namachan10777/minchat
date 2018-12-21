@@ -17,8 +17,22 @@ function updateUserList(list) {
 
 socket.onmessage = (e) => {
   let msg = JSON.parse(e.data);
-  if (msg.path === '/userlist')
+  if (msg.path === '/userlist') {
     updateUserList(msg.content);
+  }
+  else if (msg.path === '/joined') {
+    // 遷移処理
+  }
+  else if (msg.path === '/error') {
+    if (msg.errorCode === 'duplicated name')
+      userList.push(msg.content);
+  }
+}
+
+function tryJoin(username) {
+  socket.send(JSON.stringify({
+    name: username
+  }));
 }
 
 function verifyUsername(username) {
@@ -65,6 +79,9 @@ function JoinWindow () {
   joinButton.classList.add("join-button");
   joinButton.classList.add("join-forms");
   joinButton.disabled = true;
+  joinButton.addEventListener("click", () => {
+    tryJoin(document.querySelector('.username-input').value);
+  });
 
   let formContainer = document.createElement("div");
   formContainer.classList.add("form-container");
@@ -74,6 +91,10 @@ function JoinWindow () {
   screen.appendChild(formContainer);
   
   return screen;
+}
+
+function ChatWindow () {
+  return document.createElement("div");
 }
 
 root.appendChild(JoinWindow());

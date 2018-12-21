@@ -22,6 +22,8 @@ socket.onmessage = (e) => {
   }
   else if (msg.path === '/joined') {
     // 遷移処理
+    root.removeChild(root.firstChild);
+    root.appendChild(ChatWindow());
   }
   else if (msg.path === '/error') {
     if (msg.code === 'duplicated-name')

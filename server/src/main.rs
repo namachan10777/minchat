@@ -52,13 +52,19 @@ impl ws::Handler for ChatHandler {
                     }).to_string())
                 }
                 else {
-                    let join_msg = json!({
+                    self.users.borrow_mut().push(msg.name.clone());
+                    self.name = Some(msg.name.clone());
+                    self.out.send(json!({
+                        "path": "/joined",
+                    }).to_string())?;
+                    self.out.broadcast(json!({
                         "path": "/message",
                         "content": format!("{} has joined!", msg.name)
-                    }).to_string();
-                    self.users.borrow_mut().push(msg.name.clone());
-                    self.name = Some(msg.name);
-                    return self.out.broadcast(join_msg)
+                    }).to_string())?;
+                    return self.out.broadcast(json!({
+                        "path": "/userlist",
+                        "content": self.users.borrow().clone()
+                    }).to_string())
                 }
             }
 

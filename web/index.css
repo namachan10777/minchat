@@ -20,10 +20,7 @@ body {
 	background-color: #263238;
 }
 
-.join-button {
-	margin-left: 2vw;
-	width: 10vw;
-	height: 3vw;
+.raised-button {
 	border-radius: 0.2vw;
 	border: 0;
 	background-color: #009999;
@@ -35,13 +32,18 @@ body {
 	outline: none;
 }
 
-.join-button:hover {
+.join-button {
+	width: 10vw;
+	height: 4vh;
+}
+
+.raised-button:hover {
 	background-color: #32adad;
 	transition: all 300ms;
 	color: #ffffff;
 }
 
-.join-button:active {
+.raised-button:active {
 	background-color: #009999;
 }
 
@@ -83,4 +85,54 @@ body {
 .form-container {
 	display: flex;
 	flex-direction: row;
+}
+
+.chat-main-pane {
+	width: 80%;
+	height: 100%;
+}
+
+.chat-side-pane {
+	width: 20%;
+	height: 100%;
+	background-color: #bdc1c3;
+}
+
+.chat-input {
+	margin: 0;
+	width: calc(100% - 10vw - 2vw);
+	margin-right: 1vw;
+	border-radius: 0.2vw;
+	background-color: #7c8487;
+	border: none;
+	resize: none;
+	outline: none;
+	color: #e9eaeb;
+	font-size: large;
+	padding: 1vh;
+}
+
+.chat-form {
+	padding: 0 1vw 0 1vw;
+	display: flex;
+	flex-direction: row;
+	margin: 1vh 0 1vh 0;
+}
+
+.submit-button {
+	width: 10vw;
+	height: 6vh;
+}
+
+.chat-root {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	height: 100%;
+	background-color: #263238;
+}
+
+.message-container {
+	height: calc(100% - 6vh - 2vh);
 }

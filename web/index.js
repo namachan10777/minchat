@@ -82,6 +82,7 @@ function JoinWindow () {
   let joinButton = document.createElement('button');
   joinButton.textContent = "Join!";
   joinButton.setAttribute('id', 'join-button');
+  joinButton.classList.add('raised-button');
   joinButton.classList.add('join-button');
   joinButton.classList.add('join-forms');
   joinButton.disabled = true;
@@ -99,8 +100,54 @@ function JoinWindow () {
   return screen;
 }
 
-function ChatWindow () {
-  return document.createElement('div');
+function MessageContainer() {
+  let msgc = document.createElement('div');
+  msgc.classList.add('message-container');
+  msgc.setAttribute('id', 'message-container');
+  return msgc;
 }
 
-root.appendChild(JoinWindow());
+function ChatForm() {
+  let chatForm = document.createElement('div');
+  chatForm.classList.add('chat-form');
+
+  let input = document.createElement('textarea');
+  //input.setAttribute('type', 'text');
+  input.setAttribute('id', 'chat-input');
+  input.classList.add('chat-input');
+
+  let submitButton = document.createElement('button');
+  submitButton.setAttribute('id', 'submit-buttoon');
+  submitButton.classList.add('raised-button');
+  submitButton.classList.add('submit-button');
+  submitButton.textContent = "Submit!";
+
+  chatForm.appendChild(input);
+  chatForm.appendChild(submitButton);
+  return chatForm;
+}
+
+function ChatMainPane () {
+  let chatRoot = document.createElement('div');
+  chatRoot.classList.add('chat-main-pane');
+  chatRoot.appendChild(MessageContainer());
+  chatRoot.appendChild(ChatForm());
+  return chatRoot;
+}
+
+function ChatSidePane () {
+  let side = document.createElement('div');
+  side.classList.add('chat-side-pane');
+  return side;
+}
+
+function ChatWindow() {
+  let chatRoot = document.createElement('div');
+  chatRoot.classList.add('chat-root');
+  chatRoot.appendChild(ChatSidePane());
+  chatRoot.appendChild(ChatMainPane());
+  return chatRoot;
+}
+
+//root.appendChild(JoinWindow());
+root.appendChild(ChatWindow());

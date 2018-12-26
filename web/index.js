@@ -65,6 +65,14 @@ function verifyUsername(username) {
   else return "good!";
 }
 
+function postMessage() {
+  let input = document.getElementById('chat-input');
+  socket.send(JSON.stringify({
+    msg: input.value
+  }));
+  input.value = "";
+}
+
 function UsernameInput () {
   let root = document.createElement('div');
   
@@ -79,6 +87,11 @@ function UsernameInput () {
   usernameInput.classList.add('username-input');
   usernameInput.classList.add('join-forms');
   usernameInput.disabled = userList === undefined;
+  usernameInput.addEventListener('keydown', (e) => {
+    if (e.code === 'Enter') {
+      tryJoin(usernameInput.value);
+    }
+  });
 
   let usernameInputUnderline = document.createElement('div');
   usernameInputUnderline.classList.add('username-input-underline');
@@ -135,18 +148,18 @@ function ChatForm() {
   //input.setAttribute('type', 'text');
   input.setAttribute('id', 'chat-input');
   input.classList.add('chat-input');
+  input.addEventListener('keydown', (e) => {
+    if (e.ctrlKey === true && e.code === 'Enter') {
+      postMessage();
+    }
+  });
 
   let submitButton = document.createElement('button');
   submitButton.setAttribute('id', 'submit-buttoon');
   submitButton.classList.add('raised-button');
   submitButton.classList.add('submit-button');
   submitButton.textContent = "Submit!";
-  submitButton.addEventListener('click', () => {
-    socket.send(JSON.stringify({
-      msg: input.value
-    }));
-    input.value = "";
-  });
+  submitButton.addEventListener('click', postMessage);
 
   chatForm.appendChild(input);
   chatForm.appendChild(submitButton);

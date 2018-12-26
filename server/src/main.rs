@@ -98,7 +98,7 @@ impl ws::Handler for ChatHandler {
         ()
     }
 
-    fn on_timeout(&mut self, tok: ws::util::Token) -> ws::Result<()> {
+    fn on_timeout(&mut self, _: ws::util::Token) -> ws::Result<()> {
         Ok(())
     }
 }

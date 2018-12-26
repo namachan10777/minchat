@@ -179,6 +179,10 @@ function ChatMainPane () {
 function ChatSidePane () {
   let side = document.createElement('div');
   side.classList.add('chat-side-pane');
+  let serverInfo = document.createElement('div');
+  serverInfo.textContent = "Members";
+  serverInfo.classList.add('server-info');
+  side.appendChild(serverInfo);
   return side;
 }
 

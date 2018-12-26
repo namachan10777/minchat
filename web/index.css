@@ -90,12 +90,24 @@ body {
 .chat-main-pane {
 	width: 80%;
 	height: 100%;
+	font-family: 'M PLUS 1p';
 }
 
 .chat-side-pane {
 	width: 20%;
 	height: 100%;
 	background-color: #bdc1c3;
+}
+
+.server-info {
+	width: 100%;
+	color: #eeeeee;
+	font-size: x-large;
+	padding: 1vh 0 1vh 0;
+	background-color: #575d5f;
+	text-align: center;
+	font-family: 'Merriweather Sans', sans-serif;
+	font-weight: bolder;
 }
 
 .chat-input {
@@ -110,6 +122,7 @@ body {
 	color: #e9eaeb;
 	font-size: large;
 	padding: 1vh;
+	font-family: 'M PLUS 1p';
 }
 
 .chat-input::placeholder {
@@ -121,11 +134,11 @@ body {
 	display: flex;
 	flex-direction: row;
 	margin: 1vh 0 1vh 0;
+	height: 6vh;
 }
 
 .submit-button {
 	width: 10vw;
-	height: 6vh;
 }
 
 .chat-root {

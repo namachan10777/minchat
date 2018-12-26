@@ -61,7 +61,8 @@ impl ws::Handler for ChatHandler {
                     }).to_string())?;
                     self.out.broadcast(json!({
                         "path": "/message",
-                        "content": format!("{} has joined!", msg.name)
+                        "content": format!("{} has joined!", msg.name),
+                        "name": "server-bot"
                     }).to_string())?;
                     return self.out.broadcast(json!({
                         "path": "/userlist",

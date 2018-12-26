@@ -166,6 +166,10 @@ body {
 	font-weight: bolder;
 }
 
+.server-bot-name {
+	color: #ce3d33;
+}
+
 .message-content {
 	margin: 0.5vh;
 }

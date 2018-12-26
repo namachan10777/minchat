@@ -22,6 +22,8 @@ function Message(name, content) {
   let nameElm = document.createElement('div');
   nameElm.classList.add('message-sender-name');
   nameElm.textContent = name;
+  if (name === 'server-bot')
+    nameElm.classList.add('server-bot-name');
   let contentElm = document.createElement('div');
   contentElm.classList.add('message-content');
   contentElm.textContent = content;

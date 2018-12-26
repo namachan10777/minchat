@@ -48,9 +48,13 @@ socket.onmessage = (e) => {
       userList.push(msg.content);
   }
   else if (msg.path === '/message') {
-    let messageContainer = document.getElementById('message-container');
-    if (messageContainer)
-      messageContainer.appendChild(Message(msg.name, msg.content));
+    let container = document.getElementById('message-container');
+    if (container) {
+      let shouldScroll = container.scrollTop + container.clientHeight === container.scrollHeight;
+      container.appendChild(Message(msg.name, msg.content));
+      if (shouldScroll)
+        container.scrollTop = container.scrollHeight;
+    }
   }
 }
 

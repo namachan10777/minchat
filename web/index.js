@@ -141,6 +141,12 @@ function ChatForm() {
   submitButton.classList.add('raised-button');
   submitButton.classList.add('submit-button');
   submitButton.textContent = "Submit!";
+  submitButton.addEventListener('click', () => {
+    socket.send(JSON.stringify({
+      msg: input.value
+    }));
+    input.value = "";
+  });
 
   chatForm.appendChild(input);
   chatForm.appendChild(submitButton);

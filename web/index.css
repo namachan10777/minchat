@@ -135,4 +135,20 @@ body {
 
 .message-container {
 	height: calc(100% - 6vh - 2vh);
+	overflow-y: scroll;
+	overflow-x: visible;
+	overflow-wrap: break-word;
+}
+
+.message {
+	color: #ffffff;
+	margin: 1vh 0 0 3vw;
+}
+
+.message-sender-name {
+	font-weight: bolder;
+}
+
+.message-content {
+	margin: 0.5vh;
 }

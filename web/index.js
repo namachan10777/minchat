@@ -16,6 +16,21 @@ function updateUserList(list) {
   if (usernameInput) usernameInput.disabled = false;
 }
 
+function Message(name, content) {
+  let root = document.createElement('div');
+  root.classList.add('message');
+  let nameElm = document.createElement('div');
+  nameElm.classList.add('message-sender-name');
+  nameElm.textContent = name;
+  let contentElm = document.createElement('div');
+  contentElm.classList.add('message-content');
+  contentElm.textContent = content;
+  root.appendChild(nameElm);
+  root.appendChild(contentElm);
+
+  return root;
+}
+
 socket.onmessage = (e) => {
   let msg = JSON.parse(e.data);
   if (msg.path === '/userlist') {
@@ -29,6 +44,11 @@ socket.onmessage = (e) => {
   else if (msg.path === '/error') {
     if (msg.code === 'duplicated-name')
       userList.push(msg.content);
+  }
+  else if (msg.path === '/message') {
+    let messageContainer = document.getElementById('message-container');
+    if (messageContainer)
+      messageContainer.appendChild(Message(msg.name, msg.content));
   }
 }
 
@@ -149,5 +169,5 @@ function ChatWindow() {
   return chatRoot;
 }
 
-//root.appendChild(JoinWindow());
-root.appendChild(ChatWindow());
+root.appendChild(JoinWindow());
+//root.appendChild(ChatWindow());

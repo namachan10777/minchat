@@ -112,6 +112,10 @@ body {
 	padding: 1vh;
 }
 
+.chat-input::placeholder {
+	color: #a4a9ac;
+}
+
 .chat-form {
 	padding: 0 1vw 0 1vw;
 	display: flex;

@@ -86,6 +86,7 @@ function UsernameInput () {
   usernameInput.setAttribute('id', 'username-input');
   usernameInput.classList.add('username-input');
   usernameInput.classList.add('join-forms');
+  usernameInput.placeholder = "your name";
   usernameInput.disabled = userList === undefined;
   usernameInput.addEventListener('keydown', (e) => {
     if (e.code === 'Enter') {
@@ -148,6 +149,7 @@ function ChatForm() {
   //input.setAttribute('type', 'text');
   input.setAttribute('id', 'chat-input');
   input.classList.add('chat-input');
+  input.placeholder = "ask your question!";
   input.addEventListener('keydown', (e) => {
     if (e.ctrlKey === true && e.code === 'Enter') {
       postMessage();

@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: namachan10777/minchat-test:latest
+    steps:
+      - checkout
+      - run:
+          name: Server test
+          command: cd server && cargo test

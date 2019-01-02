@@ -9,6 +9,35 @@ socket.onopen = () => {
   }));
 }
 
+function dom(tag, config, children) {
+  let node = document.createElement(tag);
+  for (key in config) {
+    if (key === 'classes')
+      node.classList.add(config.classes);
+    if (key === 'id')
+      node.setAttribute('id', config.id);
+    if (key === 'listener') {
+      for (listener in config.listener) {
+        node.addEventListener(listener, config.listener[listener]);
+      }
+    }
+    if (key === 'attr') {
+      for (attr in config.attr) {
+        node.setAttribute(attr, config.attr[attr]);
+      }
+    }
+    else {
+      node[key] = config[key];
+    }
+  }
+  if (children) {
+    for (let i = 0; i < children.length; ++i) {
+      node.appendChild(children[i]);
+    }
+  }
+  return node;
+}
+
 let userList = undefined;
 function updateUserList(list) {
   userList = list;

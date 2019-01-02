@@ -48,6 +48,12 @@ impl ws::Handler for ChatHandler {
             }
 
             if let Ok(msg) = serde_json::from_str::<Join>(text_msg) {
+                if let Some(_) = self.name {
+                    return self.out.send(json!({
+                        "path": "/error",
+                        "code": "already-joined",
+                    }).to_string())
+                }
                 if self.users.borrow().contains(&msg.name) {
                     return self.out.send(json!({
                         "path": "/error",

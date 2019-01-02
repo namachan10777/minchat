@@ -17,7 +17,7 @@ function dom(tag, config, children) {
         node.classList.add(config.class);
       }
       else {
-        for (let i = 0; i < config.class.length; ++i) {
+        for (i in config.class) {
           node.classList.add(config.class[i]);
         }
       }
@@ -41,7 +41,7 @@ function dom(tag, config, children) {
     }
   }
   if (children) {
-    for (let i = 0; i < children.length; ++i) {
+    for (i in children) {
       node.appendChild(children[i]);
     }
   }

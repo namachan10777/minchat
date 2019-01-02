@@ -12,9 +12,14 @@ socket.onopen = () => {
 function dom(tag, config, children) {
   let node = document.createElement(tag);
   for (key in config) {
-    if (key === 'classes') {
-      for (let i = 0; i < config.classes.length; ++i) {
-        node.classList.add(config.classes[i]);
+    if (key === 'class') {
+      if (typeof config.class === 'string') {
+        node.classList.add(config.class);
+      }
+      else {
+        for (let i = 0; i < config.class.length; ++i) {
+          node.classList.add(config.class[i]);
+        }
       }
     }
     if (key === 'text')
@@ -52,18 +57,18 @@ function updateUserList(list) {
 
 function Message(name, content) {
   let nameElm = dom('div', {
-    classes: ['message-sender-name'],
+    class: 'message-sender-name',
     text: name
   });
   let contentElm = dom('div', {
     text: content,
-    classes: ['message-content']
+    class: 'message-content'
   });
   if (name === 'server-bot')
     nameElm.classList.add('server-bot-name');
 
   return dom('div', {
-    classes: ['message']
+    class: 'message'
   }, [nameElm, contentElm]);
 }
 
@@ -116,7 +121,7 @@ function postMessage() {
 function UsernameInput () {
   let usernameInput = dom('input', {
     id: 'username-input',
-    classes: ['username-input', 'join-forms'],
+    class: ['username-input', 'join-forms'],
     placeholder: "your name",
     disabled: userList === undefined,
     attr: {
@@ -137,12 +142,12 @@ function UsernameInput () {
   });
 
   let usernameInputUnderline = dom('div', {
-    classes: ['username-input-underline']
+    class: 'username-input-underline'
   });
 
   let usernameStatus = dom('span', {
     id: 'username-status',
-    classes: ['username-status'],
+    class: 'username-status',
     text: "please input your name"
   });
 
@@ -152,7 +157,7 @@ function UsernameInput () {
 function JoinWindow () {
   let joinButton = dom('button', {
     id: 'join-button',
-    classes: ['raised-button', 'join-button', 'join-forms'],
+    class: ['raised-button', 'join-button', 'join-forms'],
     disabled: true,
     listener: {
       click: () => {
@@ -163,18 +168,18 @@ function JoinWindow () {
   });
 
   let formContainer = dom('div', {
-    classes: ['form-container']
+    class: 'form-container'
   }, [UsernameInput(), joinButton]);
 
   return dom('div', {
-    classes: ['join-screen']
+    class: 'join-screen'
   }, [formContainer]);
 }
 
 function MessageContainer() {
   return dom('div', {
     id: 'message-container',
-    classes: ['message-container']
+    class: 'message-container'
   });
 }
 
@@ -184,7 +189,7 @@ function ChatForm() {
 
   let input = dom('textarea', {
     id: 'chat-input',
-    classes: ['chat-input'],
+    class: 'chat-input',
     placeholder: "ask your question!",
     listener: {
       keydown: (e) => {
@@ -197,7 +202,7 @@ function ChatForm() {
 
   let submitButton = dom('button', {
     id: 'submit-button',
-    classes: ['raised-button', 'submit-button'],
+    class: ['raised-button', 'submit-button'],
     text: "Submit!",
     listener: {
       click: postMessage
@@ -205,29 +210,29 @@ function ChatForm() {
   });
 
   return dom('div', {
-    classes: ['chat-form']
+    class: 'chat-form'
   }, [input, submitButton]);
 }
 
 function ChatMainPane () {
   return dom('div', {
-    classes: ['chat-main-pane']
+    class: 'chat-main-pane'
   }, [MessageContainer(), ChatForm()]);
 }
 
 function ChatSidePane () {
   let serverInfo = dom('div', {
     text: "Members",
-    classes: ['server-info']
+    class: 'server-info'
   });
   return dom('div', {
-    classes: ['chat-side-pane']
+    class: 'chat-side-pane'
   }, [serverInfo]);
 }
 
 function ChatWindow() {
   return dom('div', {
-    classes: ['chat-root']
+    class: 'chat-root'
   }, [ChatSidePane(), ChatMainPane()]);
 }
 

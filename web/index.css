@@ -96,7 +96,8 @@ body {
 .chat-side-pane {
 	width: 20%;
 	height: 100%;
-	background-color: #bdc1c3;
+	background-color: #3B464B;
+	box-shadow: 5px 0 7px 0 #111516;
 }
 
 .server-info {
@@ -159,7 +160,8 @@ body {
 
 .message {
 	color: #ffffff;
-	margin: 1vh 0 0 3vw;
+	margin: 1vh 3vw 1vh 3vw;
+	border-bottom: 1px solid #5D6568;
 }
 
 .message-sender-name {
@@ -172,4 +174,23 @@ body {
 
 .message-content {
 	margin: 0.5vh;
+}
+
+.user-list {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: stretch;
+	overflow-y: scroll;
+	overflow-x: visible;
+	overflow-wrap: break-word;
+}
+
+.member-name {
+	font-weight: bolder;
+	margin: 1vh;
+	padding: 0 0 0.5vh 0;
+	font-size: large;
+	color: #ffffff;
+	border-bottom: 1px solid #5D6568;
 }

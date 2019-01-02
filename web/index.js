@@ -225,9 +225,19 @@ function ChatSidePane () {
     text: "Members",
     class: 'server-info'
   });
+  let membersDOM = [];
+  for (idx in userList) {
+    membersDOM.push(dom('div', {
+      class: 'member-name',
+      text: userList[idx]
+    }));
+  }
+  let userListDOM = dom('div', {
+    class: 'user-list',
+  }, membersDOM);
   return dom('div', {
     class: 'chat-side-pane'
-  }, [serverInfo]);
+  }, [serverInfo, userListDOM]);
 }
 
 function ChatWindow() {

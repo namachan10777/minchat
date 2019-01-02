@@ -4,10 +4,11 @@ extern crate ws;
 
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::collections::HashSet;
 
 const ADDR: &'static str = "127.0.0.1:8080";
 
-type Users = Rc<RefCell<Vec<String>>>;
+type Users = Rc<RefCell<HashSet<String>>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Message {
@@ -47,6 +48,12 @@ impl ws::Handler for ChatHandler {
             }
 
             if let Ok(msg) = serde_json::from_str::<Join>(text_msg) {
+                if let Some(_) = self.name {
+                    return self.out.send(json!({
+                        "path": "/error",
+                        "code": "already-joined",
+                    }).to_string())
+                }
                 if self.users.borrow().contains(&msg.name) {
                     return self.out.send(json!({
                         "path": "/error",
@@ -54,7 +61,7 @@ impl ws::Handler for ChatHandler {
                     }).to_string())
                 }
                 else {
-                    self.users.borrow_mut().push(msg.name.clone());
+                    self.users.borrow_mut().insert(msg.name.clone());
                     self.name = Some(msg.name.clone());
                     self.out.send(json!({
                         "path": "/joined",
@@ -95,16 +102,27 @@ impl ws::Handler for ChatHandler {
     }
 
     fn on_close(&mut self, _: ws::CloseCode, _: &str) -> () {
-        ()
+        if let Some(name) = self.name.clone() {
+            self.users.borrow_mut().remove(&name);
+            self.out.broadcast(json!({
+                "path": "/message",
+                "content": format!("{} has leaved!", &name),
+                "name": "server-bot"
+            }).to_string()).unwrap();
+            self.out.send(json!({
+                "path": "/userlist",
+                "content": self.users.borrow().clone()
+            }).to_string()).unwrap();
+        }
     }
 
-    fn on_timeout(&mut self, tok: ws::util::Token) -> ws::Result<()> {
+    fn on_timeout(&mut self, _: ws::util::Token) -> ws::Result<()> {
         Ok(())
     }
 }
 
 fn main() {
-    let users = Users::new(RefCell::new(Vec::with_capacity(1_0000)));
+    let users = Users::new(RefCell::new(HashSet::new()));
     if let Err(err) = ws::listen(ADDR, |out| {
         ChatHandler {
             out: out,

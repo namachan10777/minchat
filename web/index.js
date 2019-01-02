@@ -9,28 +9,72 @@ socket.onopen = () => {
   }));
 }
 
+function dom(tag, config, children) {
+  let node = document.createElement(tag);
+  for (key in config) {
+    if (key === 'class') {
+      if (typeof config.class === 'string') {
+        node.classList.add(config.class);
+      }
+      else {
+        for (i in config.class) {
+          node.classList.add(config.class[i]);
+        }
+      }
+    }
+    if (key === 'text')
+      node.textContent = config.text;
+    if (key === 'id')
+      node.setAttribute('id', config.id);
+    if (key === 'listener') {
+      for (listener in config.listener) {
+        node.addEventListener(listener, config.listener[listener]);
+      }
+    }
+    if (key === 'attr') {
+      for (attr in config.attr) {
+        node.setAttribute(attr, config.attr[attr]);
+      }
+    }
+    else {
+      node[key] = config[key];
+    }
+  }
+  if (children) {
+    for (i in children) {
+      node.appendChild(children[i]);
+    }
+  }
+  return node;
+}
+
 let userList = undefined;
 function updateUserList(list) {
   userList = list;
   let usernameInput = document.getElementById('username-input');
   if (usernameInput) usernameInput.disabled = false;
+  let userListDOM = document.getElementById('user-list');
+  if (userListDOM) {
+    let newUserListDOM = UserList(list);
+    userListDOM.parentNode.replaceChild(newUserListDOM, userListDOM);
+  }
 }
 
 function Message(name, content) {
-  let root = document.createElement('div');
-  root.classList.add('message');
-  let nameElm = document.createElement('div');
-  nameElm.classList.add('message-sender-name');
-  nameElm.textContent = name;
+  let nameElm = dom('div', {
+    class: 'message-sender-name',
+    text: name
+  });
+  let contentElm = dom('div', {
+    text: content,
+    class: 'message-content'
+  });
   if (name === 'server-bot')
     nameElm.classList.add('server-bot-name');
-  let contentElm = document.createElement('div');
-  contentElm.classList.add('message-content');
-  contentElm.textContent = content;
-  root.appendChild(nameElm);
-  root.appendChild(contentElm);
 
-  return root;
+  return dom('div', {
+    class: 'message'
+  }, [nameElm, contentElm]);
 }
 
 socket.onmessage = (e) => {
@@ -80,124 +124,135 @@ function postMessage() {
 }
 
 function UsernameInput () {
-  let root = document.createElement('div');
-  
-  let usernameInput = document.createElement('input');
-  usernameInput.setAttribute('type', 'text');
-  usernameInput.addEventListener('input', (e) => {
-    let msg = verifyUsername(e.target.value);
-    if (msg === "good!") document.getElementById('join-button').disabled = false;
-    document.getElementById('username-status').textContent = msg;
-  });
-  usernameInput.setAttribute('id', 'username-input');
-  usernameInput.classList.add('username-input');
-  usernameInput.classList.add('join-forms');
-  usernameInput.placeholder = "your name";
-  usernameInput.disabled = userList === undefined;
-  usernameInput.addEventListener('keydown', (e) => {
-    if (e.code === 'Enter') {
-      tryJoin(usernameInput.value);
+  let usernameInput = dom('input', {
+    id: 'username-input',
+    class: ['username-input', 'join-forms'],
+    placeholder: "your name",
+    disabled: userList === undefined,
+    attr: {
+      type: 'text',
+    },
+    listener: {
+      input: (e) => {
+        let msg = verifyUsername(e.target.value);
+        if (msg === "good!") document.getElementById('join-button').disabled = false;
+        document.getElementById('username-status').textContent = msg;
+      },
+      keydown: (e) => {
+        if (e.code === 'Enter') {
+          tryJoin(usernameInput.value);
+        }
+      }
     }
   });
 
-  let usernameInputUnderline = document.createElement('div');
-  usernameInputUnderline.classList.add('username-input-underline');
+  let usernameInputUnderline = dom('div', {
+    class: 'username-input-underline'
+  });
 
-  let usernameStatus = document.createElement('span');
-  usernameStatus.setAttribute('id', 'username-status');
-  usernameStatus.classList.add('username-status');
-  usernameStatus.textContent = "please input your name";
+  let usernameStatus = dom('span', {
+    id: 'username-status',
+    class: 'username-status',
+    text: "please input your name"
+  });
 
-  root.appendChild(usernameInput);
-  root.appendChild(usernameInputUnderline);
-  root.appendChild(usernameStatus);
-
-  return root;
+  return dom('div', {}, [usernameInput, usernameInputUnderline, usernameStatus]);
 }
 
 function JoinWindow () {
-  let screen = document.createElement('div');
-  screen.classList.add('join-screen');
-
-  let joinButton = document.createElement('button');
-  joinButton.textContent = "Join!";
-  joinButton.setAttribute('id', 'join-button');
-  joinButton.classList.add('raised-button');
-  joinButton.classList.add('join-button');
-  joinButton.classList.add('join-forms');
-  joinButton.disabled = true;
-  joinButton.addEventListener('click', () => {
-    tryJoin(document.getElementById('username-input').value);
+  let joinButton = dom('button', {
+    id: 'join-button',
+    class: ['raised-button', 'join-button', 'join-forms'],
+    disabled: true,
+    listener: {
+      click: () => {
+        tryJoin(document.getElementById('username-input').value);
+      }
+    },
+    text: "Join!"
   });
 
-  let formContainer = document.createElement('div');
-  formContainer.classList.add('form-container');
-  formContainer.appendChild(UsernameInput());
-  formContainer.appendChild(joinButton);
+  let formContainer = dom('div', {
+    class: 'form-container'
+  }, [UsernameInput(), joinButton]);
 
-  screen.appendChild(formContainer);
-  
-  return screen;
+  return dom('div', {
+    class: 'join-screen'
+  }, [formContainer]);
 }
 
 function MessageContainer() {
-  let msgc = document.createElement('div');
-  msgc.classList.add('message-container');
-  msgc.setAttribute('id', 'message-container');
-  return msgc;
+  return dom('div', {
+    id: 'message-container',
+    class: 'message-container'
+  });
 }
 
 function ChatForm() {
   let chatForm = document.createElement('div');
   chatForm.classList.add('chat-form');
 
-  let input = document.createElement('textarea');
-  //input.setAttribute('type', 'text');
-  input.setAttribute('id', 'chat-input');
-  input.classList.add('chat-input');
-  input.placeholder = "ask your question!";
-  input.addEventListener('keydown', (e) => {
-    if (e.ctrlKey === true && e.code === 'Enter') {
-      postMessage();
+  let input = dom('textarea', {
+    id: 'chat-input',
+    class: 'chat-input',
+    placeholder: "ask your question!",
+    listener: {
+      keydown: (e) => {
+        if (e.ctrlKey === true && e.code === 'Enter') {
+          postMessage();
+        }
+      }
     }
   });
 
-  let submitButton = document.createElement('button');
-  submitButton.setAttribute('id', 'submit-buttoon');
-  submitButton.classList.add('raised-button');
-  submitButton.classList.add('submit-button');
-  submitButton.textContent = "Submit!";
-  submitButton.addEventListener('click', postMessage);
+  let submitButton = dom('button', {
+    id: 'submit-button',
+    class: ['raised-button', 'submit-button'],
+    text: "Submit!",
+    listener: {
+      click: postMessage
+    }
+  });
 
-  chatForm.appendChild(input);
-  chatForm.appendChild(submitButton);
-  return chatForm;
+  return dom('div', {
+    class: 'chat-form'
+  }, [input, submitButton]);
 }
 
 function ChatMainPane () {
-  let chatRoot = document.createElement('div');
-  chatRoot.classList.add('chat-main-pane');
-  chatRoot.appendChild(MessageContainer());
-  chatRoot.appendChild(ChatForm());
-  return chatRoot;
+  return dom('div', {
+    class: 'chat-main-pane'
+  }, [MessageContainer(), ChatForm()]);
+}
+
+function UserList(list) {
+  let membersDOM = [];
+  for (idx in list) {
+    membersDOM.push(dom('div', {
+      class: 'member-name',
+      text: userList[idx]
+    }));
+  }
+  return dom('div', {
+    id: 'user-list',
+    class: 'user-list',
+  }, membersDOM);
 }
 
 function ChatSidePane () {
-  let side = document.createElement('div');
-  side.classList.add('chat-side-pane');
-  let serverInfo = document.createElement('div');
-  serverInfo.textContent = "Members";
-  serverInfo.classList.add('server-info');
-  side.appendChild(serverInfo);
-  return side;
+  let serverInfo = dom('div', {
+    text: "Members",
+    class: 'server-info'
+  });
+  return dom('div', {
+    class: 'chat-side-pane'
+  }, [serverInfo, UserList(userList)]);
 }
 
 function ChatWindow() {
-  let chatRoot = document.createElement('div');
-  chatRoot.classList.add('chat-root');
-  chatRoot.appendChild(ChatSidePane());
-  chatRoot.appendChild(ChatMainPane());
-  return chatRoot;
+  return dom('div', {
+    class: 'chat-root'
+  }, [ChatSidePane(), ChatMainPane()]);
 }
 
 root.appendChild(JoinWindow());

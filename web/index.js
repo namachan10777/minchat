@@ -53,6 +53,11 @@ function updateUserList(list) {
   userList = list;
   let usernameInput = document.getElementById('username-input');
   if (usernameInput) usernameInput.disabled = false;
+  let userListDOM = document.getElementById('user-list');
+  if (userListDOM) {
+    let newUserListDOM = UserList(list);
+    userListDOM.parentNode.replaceChild(newUserListDOM, userListDOM);
+  }
 }
 
 function Message(name, content) {
@@ -220,24 +225,28 @@ function ChatMainPane () {
   }, [MessageContainer(), ChatForm()]);
 }
 
-function ChatSidePane () {
-  let serverInfo = dom('div', {
-    text: "Members",
-    class: 'server-info'
-  });
+function UserList(list) {
   let membersDOM = [];
-  for (idx in userList) {
+  for (idx in list) {
     membersDOM.push(dom('div', {
       class: 'member-name',
       text: userList[idx]
     }));
   }
-  let userListDOM = dom('div', {
+  return dom('div', {
+    id: 'user-list',
     class: 'user-list',
   }, membersDOM);
+}
+
+function ChatSidePane () {
+  let serverInfo = dom('div', {
+    text: "Members",
+    class: 'server-info'
+  });
   return dom('div', {
     class: 'chat-side-pane'
-  }, [serverInfo, userListDOM]);
+  }, [serverInfo, UserList(userList)]);
 }
 
 function ChatWindow() {

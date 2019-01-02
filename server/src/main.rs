@@ -96,17 +96,18 @@ impl ws::Handler for ChatHandler {
     }
 
     fn on_close(&mut self, _: ws::CloseCode, _: &str) -> () {
-        let name = self.name.clone().unwrap();
-        self.users.borrow_mut().remove(&name);
-        self.out.broadcast(json!({
-            "path": "/message",
-            "content": format!("{} has leaved!", &name),
-            "name": "server-bot"
-        }).to_string()).unwrap();
-        self.out.send(json!({
-            "path": "/userlist",
-            "content": self.users.borrow().clone()
-        }).to_string()).unwrap();
+        if let Some(name) = self.name.clone() {
+            self.users.borrow_mut().remove(&name);
+            self.out.broadcast(json!({
+                "path": "/message",
+                "content": format!("{} has leaved!", &name),
+                "name": "server-bot"
+            }).to_string()).unwrap();
+            self.out.send(json!({
+                "path": "/userlist",
+                "content": self.users.borrow().clone()
+            }).to_string()).unwrap();
+        }
     }
 
     fn on_timeout(&mut self, _: ws::util::Token) -> ws::Result<()> {

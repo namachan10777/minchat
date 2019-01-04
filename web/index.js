@@ -44,49 +44,6 @@ socket.onmessage = (e) => {
   }
 }
 
-// dom manipulation helper
-
-let root = document.getElementById('root');
-
-function dom(tag, config, children) {
-  let node = document.createElement(tag);
-  for (key in config) {
-    if (key === 'class') {
-      if (typeof config.class === 'string') {
-        node.classList.add(config.class);
-      }
-      else {
-        for (i in config.class) {
-          node.classList.add(config.class[i]);
-        }
-      }
-    }
-    if (key === 'text')
-      node.textContent = config.text;
-    if (key === 'id')
-      node.setAttribute('id', config.id);
-    if (key === 'listener') {
-      for (listener in config.listener) {
-        node.addEventListener(listener, config.listener[listener]);
-      }
-    }
-    if (key === 'attr') {
-      for (attr in config.attr) {
-        node.setAttribute(attr, config.attr[attr]);
-      }
-    }
-    else {
-      node[key] = config[key];
-    }
-  }
-  if (children) {
-    for (i in children) {
-      node.appendChild(children[i]);
-    }
-  }
-  return node;
-}
-
 // main logic
 
 
@@ -102,6 +59,14 @@ function updateUserList(list) {
     let newUserListDOM = UserList(list);
     userListDOM.parentNode.replaceChild(newUserListDOM, userListDOM);
   }
+}
+
+function scrollCallback(change) {
+  console.log('呼ばれたよ');
+  socket.send(JSON.stringify({
+    req: 'hist'
+  }));
+  observer.unobserve(sentinel);
 }
 
 function tryJoin(username) {
@@ -144,6 +109,51 @@ function postMessage() {
   }));
   input.value = "";
 }
+
+// dom
+
+let root = document.getElementById('root');
+
+function dom(tag, config, children) {
+  let node = document.createElement(tag);
+  for (key in config) {
+    if (key === 'class') {
+      if (typeof config.class === 'string') {
+        node.classList.add(config.class);
+      }
+      else {
+        for (i in config.class) {
+          node.classList.add(config.class[i]);
+        }
+      }
+    }
+    if (key === 'text')
+      node.textContent = config.text;
+    if (key === 'id')
+      node.setAttribute('id', config.id);
+    if (key === 'listener') {
+      for (listener in config.listener) {
+        node.addEventListener(listener, config.listener[listener]);
+      }
+    }
+    if (key === 'attr') {
+      for (attr in config.attr) {
+        node.setAttribute(attr, config.attr[attr]);
+      }
+    }
+    else {
+      node[key] = config[key];
+    }
+  }
+  if (children) {
+    for (i in children) {
+      node.appendChild(children[i]);
+    }
+  }
+  return node;
+}
+
+
 
 function UsernameInput () {
   let usernameInput = dom('input', {
@@ -208,19 +218,12 @@ function MessageContainer() {
     id: 'message-container',
     class: 'message-container'
   });
-  let callback = (change) => {
-    console.log('呼ばれたよ');
-    socket.send(JSON.stringify({
-      req: 'hist'
-    }));
-    observer.unobserve(sentinel);
-  };
   let options = {
     root: container,
     rootMargin: '0px',
     threshold: 1
   };
-  observer = new IntersectionObserver(callback, options);
+  observer = new IntersectionObserver(scrollCallback, options);
   return container;
 }
 

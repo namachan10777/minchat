@@ -1,13 +1,52 @@
 //let serverURL = 'http://d-kitamura.sakura.ne.jp/lecture/ws-server';
+
+// WebSocket
 let serverURL = 'ws://localhost:8080';
 let socket = new WebSocket(serverURL);
 
-let root = document.getElementById('root');
 socket.onopen = () => {
   socket.send(JSON.stringify({
     req: 'user-list'
   }));
 }
+
+let alreadySetObserver = false;
+let sentinel = null;
+
+socket.onmessage = (e) => {
+  let msg = JSON.parse(e.data);
+  if (msg.path === '/userlist') {
+    updateUserList(msg.content);
+  }
+  else if (msg.path === '/joined') {
+    // 遷移処理
+    root.removeChild(root.firstChild);
+    root.appendChild(ChatWindow());
+  }
+  else if (msg.path === '/error') {
+    if (msg.code === 'duplicated-name')
+      userList.push(msg.content);
+  }
+  else if (msg.path === '/message') {
+    let container = document.getElementById('message-container');
+    if (container) {
+      let shouldScroll = container.scrollTop + container.clientHeight === container.scrollHeight;
+      let msgDOM = Message(msg.name, msg.content);
+      if (!alreadySetObserver) {
+        observer.observe(msgDOM);
+        alreadySetObserver = true;
+        sentinel = msgDOM;
+      }
+      container.appendChild(msgDOM);
+      if (shouldScroll)
+        container.scrollTop = container.scrollHeight;
+    }
+  }
+}
+
+// dom manipulation helper
+
+let root = document.getElementById('root');
 
 function dom(tag, config, children) {
   let node = document.createElement(tag);
@@ -48,6 +87,11 @@ function dom(tag, config, children) {
   return node;
 }
 
+// main logic
+
+
+let observer = null;
+
 let userList = undefined;
 function updateUserList(list) {
   userList = list;
@@ -59,6 +103,21 @@ function updateUserList(list) {
     userListDOM.parentNode.replaceChild(newUserListDOM, userListDOM);
   }
 }
+
+function tryJoin(username) {
+  socket.send(JSON.stringify({
+    name: username
+  }));
+}
+
+function verifyUsername(username) {
+  if (userList === undefined) return "please wait for connecting server...";
+  else if (userList.includes(username)) return "duplicated user name";
+  else if (username.length < 5) return "username length must be longer than 4";
+  else return "good!";
+}
+
+// Components
 
 function Message(name, content) {
   let nameElm = dom('div', {
@@ -77,43 +136,6 @@ function Message(name, content) {
   }, [nameElm, contentElm]);
 }
 
-socket.onmessage = (e) => {
-  let msg = JSON.parse(e.data);
-  if (msg.path === '/userlist') {
-    updateUserList(msg.content);
-  }
-  else if (msg.path === '/joined') {
-    // 遷移処理
-    root.removeChild(root.firstChild);
-    root.appendChild(ChatWindow());
-  }
-  else if (msg.path === '/error') {
-    if (msg.code === 'duplicated-name')
-      userList.push(msg.content);
-  }
-  else if (msg.path === '/message') {
-    let container = document.getElementById('message-container');
-    if (container) {
-      let shouldScroll = container.scrollTop + container.clientHeight === container.scrollHeight;
-      container.appendChild(Message(msg.name, msg.content));
-      if (shouldScroll)
-        container.scrollTop = container.scrollHeight;
-    }
-  }
-}
-
-function tryJoin(username) {
-  socket.send(JSON.stringify({
-    name: username
-  }));
-}
-
-function verifyUsername(username) {
-  if (userList === undefined) return "please wait for connecting server...";
-  else if (userList.includes(username)) return "duplicated user name";
-  else if (username.length < 5) return "username length must be longer than 4";
-  else return "good!";
-}
 
 function postMessage() {
   let input = document.getElementById('chat-input');
@@ -182,10 +204,24 @@ function JoinWindow () {
 }
 
 function MessageContainer() {
-  return dom('div', {
+  let container = dom('div', {
     id: 'message-container',
     class: 'message-container'
   });
+  let callback = (change) => {
+    console.log('呼ばれたよ');
+    socket.send(JSON.stringify({
+      req: 'hist'
+    }));
+    observer.unobserve(sentinel);
+  };
+  let options = {
+    root: container,
+    rootMargin: '0px',
+    threshold: 1
+  };
+  observer = new IntersectionObserver(callback, options);
+  return container;
 }
 
 function ChatForm() {
@@ -256,4 +292,3 @@ function ChatWindow() {
 }
 
 root.appendChild(JoinWindow());
-//root.appendChild(ChatWindow());

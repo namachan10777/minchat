@@ -9,9 +9,10 @@ use std::collections::HashSet;
 const ADDR: &'static str = "127.0.0.1:8080";
 
 type Users = Rc<RefCell<HashSet<String>>>;
+type Messages = Rc<RefCell<Vec<Message>>>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-struct Message {
+struct MessagePacket {
     msg: String
 }
 
@@ -28,7 +29,15 @@ struct Request {
 struct ChatHandler {
     out: ws::Sender,
     name: Option<String>,
-    users: Users
+    users: Users,
+    messages: Messages,
+    current_id: Rc<RefCell<usize>>,
+}
+
+struct Message {
+    sender: String,
+    content: String,
+    id: usize,
 }
 
 impl ws::Handler for ChatHandler {
@@ -38,7 +47,7 @@ impl ws::Handler for ChatHandler {
 
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
         if let Ok(text_msg) = msg.clone().as_text() {
-            if let Ok(msg) = serde_json::from_str::<Message>(text_msg) {
+            if let Ok(msg) = serde_json::from_str::<MessagePacket>(text_msg) {
                 let sender_name = &self.name.clone().unwrap_or("unknown".to_string());
                 return self.out.broadcast(json!({
                     "path": "/message",
@@ -66,6 +75,14 @@ impl ws::Handler for ChatHandler {
                     self.out.send(json!({
                         "path": "/joined",
                     }).to_string())?;
+                    let mut current_id = *self.current_id.borrow();
+                    current_id += 1;
+                    let current_id = self.current_id.replace(current_id);
+                    self.messages.borrow_mut().push(Message {
+                        id: current_id,
+                        sender: "server-bot".to_string(),
+                        content: format!("{} has joined!", msg.name),
+                    });
                     self.out.broadcast(json!({
                         "path": "/message",
                         "content": format!("{} has joined!", msg.name),
@@ -123,11 +140,14 @@ impl ws::Handler for ChatHandler {
 
 fn main() {
     let users = Users::new(RefCell::new(HashSet::new()));
+    let messages = Messages::new(RefCell::new(Vec::new()));
     if let Err(err) = ws::listen(ADDR, |out| {
         ChatHandler {
             out: out,
             name: None,
-            users: users.clone()
+            users: users.clone(),
+            messages: messages.clone(),
+            current_id: Rc::new(RefCell::new(0))
         }
     }) {
         panic!("Failed to create WebSocket due to {:?}", err);

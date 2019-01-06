@@ -8,6 +8,8 @@ use std::cell::RefCell;
 use std::collections::HashSet;
 
 const ADDR: &'static str = "127.0.0.1:8080";
+const PING: ws::util::Token = ws::util::Token(2);
+const PING_TIME: u64 = 1_000;
 
 type Users = Rc<RefCell<HashSet<String>>>;
 type Messages = Rc<RefCell<Vec<Message>>>;
@@ -101,6 +103,7 @@ impl ChatHandler {
 
 impl ws::Handler for ChatHandler {
     fn on_open(&mut self, _: ws::Handshake) -> ws::Result<()> {
+        self.out.timeout(PING_TIME, PING).unwrap();
         Ok(())
     }
 
@@ -147,15 +150,21 @@ impl ws::Handler for ChatHandler {
         }
     }
 
-    fn on_timeout(&mut self, _: ws::util::Token) -> ws::Result<()> {
-        Ok(())
+    fn on_timeout(&mut self, tok: ws::util::Token) -> ws::Result<()> {
+        match tok {
+            PING => {
+                self.out.ping(Vec::new()).unwrap();
+                self.out.timeout(PING_TIME, PING)
+            },
+            _ => unreachable!()            
+        }
     }
 }
 
 fn main() {
     let users = Users::new(RefCell::new(HashSet::new()));
     let messages = Messages::new(RefCell::new(Vec::new()));
-    let log = Rc::new(fs::File::open("msg_log.json").unwrap());
+    let log = Rc::new(fs::OpenOptions::new().write(true).create(true).open("msg_log.json").unwrap());
     if let Err(err) = ws::listen(ADDR, |out| {
         ChatHandler {
             out: out,

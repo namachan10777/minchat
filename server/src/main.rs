@@ -2,6 +2,7 @@ extern crate ws;
 #[macro_use] extern crate serde_json;
 #[macro_use] extern crate serde_derive;
 
+use std::fs;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashSet;
@@ -32,12 +33,70 @@ struct ChatHandler {
     users: Users,
     messages: Messages,
     current_id: Rc<RefCell<usize>>,
+    log: Rc<fs::File>,
 }
 
 struct Message {
     sender: String,
     content: String,
     id: usize,
+}
+
+impl ChatHandler {
+    fn handle_join(&mut self, joiner: String) -> ws::Result<()> {
+        if let Some(_) = self.name {
+            return self.out.send(json!({
+                "path": "/error",
+                "code": "already-joined",
+            }).to_string())
+        }
+        else if self.users.borrow().contains(&joiner) {
+            return self.out.send(json!({
+                "path": "/error",
+                "code": "duplicated-name",
+            }).to_string())
+        }
+        else {
+            self.users.borrow_mut().insert(joiner.clone());
+            self.name = Some(joiner.clone());
+            self.out.send(json!({
+                "path": "/joined",
+            }).to_string())?;
+            let mut current_id = *self.current_id.borrow();
+            current_id += 1;
+            let current_id = self.current_id.replace(current_id);
+            self.messages.borrow_mut().push(Message {
+                id: current_id,
+                sender: "server-bot".to_string(),
+                content: format!("{} has joined!", joiner),
+            });
+            self.out.broadcast(json!({
+                "path": "/message",
+                "content": format!("{} has joined!", joiner),
+                "name": "server-bot"
+            }).to_string())?;
+            return self.out.broadcast(json!({
+                "path": "/userlist",
+                "content": self.users.borrow().clone()
+            }).to_string())
+       }
+    }
+
+    fn handle_post(&mut self, content: String) -> ws::Result<()> {
+        let sender = self.name.clone().unwrap_or("unknown".to_string());
+        return self.out.broadcast(json!({
+            "path": "/message",
+            "content": content,
+            "name": sender
+        }).to_string())
+    }
+
+    fn handle_req_userlist(&mut self) -> ws::Result<()> {
+        return self.out.send(json!({
+            "path": "/userlist",
+            "content": self.users.borrow().clone()
+        }).to_string())
+    }
 }
 
 impl ws::Handler for ChatHandler {
@@ -48,60 +107,15 @@ impl ws::Handler for ChatHandler {
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
         if let Ok(text_msg) = msg.clone().as_text() {
             if let Ok(msg) = serde_json::from_str::<MessagePacket>(text_msg) {
-                let sender_name = &self.name.clone().unwrap_or("unknown".to_string());
-                return self.out.broadcast(json!({
-                    "path": "/message",
-                    "content": msg.msg.clone(),
-                    "name": sender_name
-                }).to_string())
+                return self.handle_post(msg.msg)
             }
-
             if let Ok(msg) = serde_json::from_str::<Join>(text_msg) {
-                if let Some(_) = self.name {
-                    return self.out.send(json!({
-                        "path": "/error",
-                        "code": "already-joined",
-                    }).to_string())
-                }
-                if self.users.borrow().contains(&msg.name) {
-                    return self.out.send(json!({
-                        "path": "/error",
-                        "code": "duplicated-name",
-                    }).to_string())
-                }
-                else {
-                    self.users.borrow_mut().insert(msg.name.clone());
-                    self.name = Some(msg.name.clone());
-                    self.out.send(json!({
-                        "path": "/joined",
-                    }).to_string())?;
-                    let mut current_id = *self.current_id.borrow();
-                    current_id += 1;
-                    let current_id = self.current_id.replace(current_id);
-                    self.messages.borrow_mut().push(Message {
-                        id: current_id,
-                        sender: "server-bot".to_string(),
-                        content: format!("{} has joined!", msg.name),
-                    });
-                    self.out.broadcast(json!({
-                        "path": "/message",
-                        "content": format!("{} has joined!", msg.name),
-                        "name": "server-bot"
-                    }).to_string())?;
-                    return self.out.broadcast(json!({
-                        "path": "/userlist",
-                        "content": self.users.borrow().clone()
-                    }).to_string())
-                }
+                return self.handle_join(msg.name)
             }
-
             if let Ok(msg) = serde_json::from_str::<Request>(text_msg) {
                 match msg.req.as_ref() {
                     "user-list" => {
-                        return self.out.send(json!({
-                            "path": "/userlist",
-                            "content": self.users.borrow().clone()
-                        }).to_string())
+                        return self.handle_req_userlist()
                     },
                     _ => {
                         return self.out.send(json!({
@@ -141,13 +155,15 @@ impl ws::Handler for ChatHandler {
 fn main() {
     let users = Users::new(RefCell::new(HashSet::new()));
     let messages = Messages::new(RefCell::new(Vec::new()));
+    let log = Rc::new(fs::File::open("msg_log.json").unwrap());
     if let Err(err) = ws::listen(ADDR, |out| {
         ChatHandler {
             out: out,
             name: None,
             users: users.clone(),
             messages: messages.clone(),
-            current_id: Rc::new(RefCell::new(0))
+            current_id: Rc::new(RefCell::new(0)),
+            log: log.clone(),
         }
     }) {
         panic!("Failed to create WebSocket due to {:?}", err);
